@@ -2,19 +2,22 @@
 import urllib.request
 import re
 import time
-
+import os
 from selenium import webdriver
+import sys
+
+abspath = os.path.abspath(sys.argv[0])
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 def downloadPinterestImages():
+    link="https://www.pinterest.es/metdaan/art"
+    limit=20 #limit of scrolls    
     browser = webdriver.Firefox(executable_path=r'geckodriver.exe')
-
-    link="https://gr.pinterest.com/pin/288934132334754326/"
     browser.get(link)
-
     time.sleep(2)
     lenOfPage = browser.execute_script("window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return lenOfPage;")
     match=False
-    limit=7 #limit of scrolls
     while(match==False and limit>0): #auto scroll till end or till limit
         lastCount = lenOfPage
         time.sleep(3)
@@ -33,8 +36,9 @@ def downloadPinterestImages():
 
     print(len(urls))
     for i in range(len(urls)):
-        if(urls[i][-4:]==".jpg"):
-            urls[i]=re.sub('.com/.*?/','.com/originals/',urls[i],flags=re.DOTALL)
+        #abc=urls[i][0:24]
+        if(urls[i][0:25]=="https://i.pinimg.com/474x"):
+            urls[i]="https://i.pinimg.com/564x"+urls[i][25:]
         else:
             urls[i]= ""
 
@@ -49,12 +53,17 @@ def downloadPinterestImages():
             f.write("%s\n" % url)
     f.close()
 
+    current_directory = os.getcwd()
+    final_directory = os.path.join(current_directory, os.path.basename(link))
+    if not os.path.exists(final_directory):
+        os.makedirs(final_directory)
+
     for i in range(len(urls)):
+        my_string=urls[i]
+        abc=os.path.basename(my_string)
         try:
-            urllib.request.urlretrieve(urls[i], "images/"+str(i)+"-image.jpg")
+            urllib.request.urlretrieve(urls[i], os.path.basename(link)+"/"+abc)
         except:
             print("Broken Link") 
-        
-        
 
 downloadPinterestImages()
